@@ -17,8 +17,8 @@ function get_db_connection(): PDO
     $host = getenv('DB_HOST') ?: '127.0.0.1';
     $port = getenv('DB_PORT') ?: '3306';
     $name = getenv('DB_NAME') ?: 'landcarelink';
-    $user = getenv('DB_USER') ?: 'root';
-    $pass = getenv('DB_PASS');
+    $user = getenv('DB_USER') ?: 'landcarelink_user';
+    $pass = getenv('DB_PASS') ?: 'passwordkuat123';
     if ($pass === false) {
         $pass = '';
     }

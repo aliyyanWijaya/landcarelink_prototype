@@ -51,8 +51,12 @@ try {
     $response   = route($method, $path, $input, $controller);
 } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Internal server error']);
-    // In production, log $e->getMessage() instead of exposing it.
+    echo json_encode([
+        'error' => 'Internal server error',
+        'debug' => $e->getMessage(),
+        'file'  => $e->getFile(),
+        'line'  => $e->getLine(),
+    ]);
     exit;
 }
 
