@@ -1,26 +1,15 @@
 <?php
-/**
- * Database connection (PDO, MySQL).
- *
- * Returns a configured PDO instance. Connection details are read from
- * environment variables so the same code runs locally and in tests/CI:
- *
- *   DB_HOST (default 127.0.0.1)
- *   DB_PORT (default 3306)
- *   DB_NAME (default landcarelink)
- *   DB_USER (default root)
- *   DB_PASS (default empty)
- */
+
 
 function get_db_connection(): PDO
 {
-    $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $port = getenv('DB_PORT') ?: '3306';
-    $name = getenv('DB_NAME') ?: 'landcarelink';
-    $user = getenv('DB_USER') ?: 'landcarelink_user';
-    $pass = getenv('DB_PASS') ?: 'passwordkuat123';
+    $host = getenv('DB_HOST');
+    $port = getenv('DB_PORT');
+    $name = getenv('DB_NAME');
+    $user = getenv('DB_USER');
+    $pass = getenv('DB_PASS');
     if ($pass === false) {
-        $pass = '';
+        throw new RuntimeException('DB_PASS env var is not set yet.');
     }
 
     $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
