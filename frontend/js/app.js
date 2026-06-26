@@ -22,6 +22,11 @@ const formError = document.getElementById("form-error");
 const tableBody = document.getElementById("groups-body");
 const emptyMsg = document.getElementById("empty-msg");
 
+const helpBtn = document.getElementById("help-btn");
+const welcomeOverlay = document.getElementById("welcome-overlay");
+const welcomeClose = document.getElementById("welcome-close");
+const welcomeGotIt = document.getElementById("welcome-got-it");
+
 const searchInput = document.getElementById("search-input");
 const typeFilter = document.getElementById("type-filter");
 const regionFilter = document.getElementById("region-filter");
@@ -122,7 +127,7 @@ function renderTable(rows) {
     emptyMsg.textContent =
       groupsCache.length === 0
         ? "No groups yet — add one in the row above."
-        : "No groups match your filters.";
+        : "No groups match your filters. Try clearing filters or add a new group in the row above.";
   }
 
   for (const g of rows) {
@@ -173,8 +178,8 @@ function buildEditRow(g) {
     fieldCell(`<select class="cell-input" data-field="type">${typeOptionsHtml(g.type)}</select>`, "type") +
     fieldCell(`<input type="text" class="cell-input" data-field="region" value="${escapeHtml(g.region)}" />`, "region") +
     fieldCell(`<input type="email" class="cell-input" data-field="contact_email" value="${escapeHtml(g.contact_email)}" />`, "contact_email") +
-    fieldCell(`<input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" value="${g.latitude}" />`, "latitude") +
-    fieldCell(`<input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" value="${g.longitude}" />`, "longitude") +
+    fieldCell(`<input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" title="Decimal degrees, e.g. -37.9 (range -90 to 90)" value="${g.latitude}" />`, "latitude") +
+    fieldCell(`<input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" title="Decimal degrees, e.g. 176.0 (range -180 to 180)" value="${g.longitude}" />`, "longitude") +
     `<td>
       <div class="actions">
         <button class="save">Save</button>
@@ -194,8 +199,8 @@ function buildAddRow() {
     fieldCell(`<select class="cell-input" data-field="type">${typeOptionsHtml(addDraft.type)}</select>`, "type") +
     fieldCell(`<input type="text" class="cell-input" data-field="region" placeholder="Region" />`, "region") +
     fieldCell(`<input type="email" class="cell-input" data-field="contact_email" placeholder="email@example.org" />`, "contact_email") +
-    fieldCell(`<input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" placeholder="Lat" />`, "latitude") +
-    fieldCell(`<input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" placeholder="Long" />`, "longitude") +
+    fieldCell(`<input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" placeholder="e.g. -37.9" title="Decimal degrees, e.g. -37.9 (range -90 to 90)" />`, "latitude") +
+    fieldCell(`<input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" placeholder="e.g. 176.0" title="Decimal degrees, e.g. 176.0 (range -180 to 180)" />`, "longitude") +
     `<td>
       <div class="actions">
         <button class="add-btn">Add</button>
@@ -424,6 +429,53 @@ function escapeHtml(value) {
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
   }[c]));
 }
+
+// --- Onboarding / help guidance --------------------------------------------
+// Persisted flag so the welcome guidance only auto-shows on the first visit.
+const WELCOME_SEEN_KEY = "landcarelink_welcome_seen";
+
+// localStorage can throw (private mode, disabled storage); degrade gracefully.
+function hasSeenWelcome() {
+  try {
+    return localStorage.getItem(WELCOME_SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markWelcomeSeen() {
+  try {
+    localStorage.setItem(WELCOME_SEEN_KEY, "1");
+  } catch {
+    /* ignore — guidance just shows again next time */
+  }
+}
+
+function openWelcome() {
+  welcomeOverlay.classList.remove("hidden");
+}
+
+// Close + permanently dismiss (the "Got it" / "×" path).
+function dismissWelcome() {
+  welcomeOverlay.classList.add("hidden");
+  markWelcomeSeen();
+}
+
+helpBtn.addEventListener("click", openWelcome);
+welcomeGotIt.addEventListener("click", dismissWelcome);
+welcomeClose.addEventListener("click", dismissWelcome);
+// Click outside the modal (on the dim backdrop) also dismisses it.
+welcomeOverlay.addEventListener("click", (e) => {
+  if (e.target === welcomeOverlay) dismissWelcome();
+});
+// Esc closes it too.
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !welcomeOverlay.classList.contains("hidden")) {
+    dismissWelcome();
+  }
+});
+
+if (!hasSeenWelcome()) openWelcome();
 
 // --- Wire up ----------------------------------------------------------------
 searchInput.addEventListener("input", () => {

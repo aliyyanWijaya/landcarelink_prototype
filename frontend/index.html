@@ -18,7 +18,66 @@
     <header>
       <h1>🌿 LandcareLink</h1>
       <p>Community environmental groups directory</p>
+      <button
+        type="button"
+        id="help-btn"
+        class="help-btn"
+        aria-label="Show help and guidance"
+        title="Show help and guidance"
+      >
+        ?
+      </button>
     </header>
+
+    <!-- First-visit onboarding guidance. Hidden by default; shown by app.js
+         on first visit (tracked via localStorage) or when the header "?" is
+         clicked. -->
+    <div
+      id="welcome-overlay"
+      class="welcome-overlay hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="welcome-title"
+    >
+      <div class="welcome-modal">
+        <button
+          type="button"
+          id="welcome-close"
+          class="welcome-close"
+          aria-label="Close help"
+        >
+          ×
+        </button>
+        <h2 id="welcome-title">👋 Welcome to LandcareLink</h2>
+        <p class="welcome-intro">
+          This page is a directory of community environmental groups. You can
+          browse them on the map, search and filter the list, and add or edit
+          group records right in the table.
+        </p>
+        <ul class="welcome-list">
+          <li>
+            <strong>Add a group</strong> — fill in the highlighted row at the
+            top of the table and click <em>Add</em>.
+          </li>
+          <li>
+            <strong>Edit a group</strong> — click <em>Edit</em> on any row to
+            change its details inline, then <em>Save</em>.
+          </li>
+          <li>
+            <strong>Use the map</strong> — each coloured dot is a group; click a
+            dot to see its name, type, region, and contact email.
+          </li>
+          <li>
+            <strong>Search &amp; filter</strong> — narrow the list by name,
+            region, or email, or filter by type and region. Use
+            <em>Clear filters</em> to reset.
+          </li>
+        </ul>
+        <button type="button" id="welcome-got-it" class="welcome-got-it">
+          Got it
+        </button>
+      </div>
+    </div>
 
     <main>
       <!-- 1. Map — full width, tall -->
@@ -46,7 +105,7 @@
           <input
             type="search"
             id="search-input"
-            placeholder="Search name, region, or email…"
+            placeholder="Search by name, region, or email…"
           />
           <select id="type-filter">
             <option value="">All types</option>
@@ -76,8 +135,28 @@
               <th>Type</th>
               <th>Region</th>
               <th>Email</th>
-              <th>Lat</th>
-              <th>Long</th>
+              <th>
+                Lat
+                <span
+                  class="hint-icon"
+                  tabindex="0"
+                  role="img"
+                  aria-label="Latitude in decimal degrees, e.g. -37.9"
+                  data-tooltip="Decimal degrees, e.g. -37.9 (range -90 to 90)"
+                  >ⓘ</span
+                >
+              </th>
+              <th>
+                Long
+                <span
+                  class="hint-icon"
+                  tabindex="0"
+                  role="img"
+                  aria-label="Longitude in decimal degrees, e.g. 176.0"
+                  data-tooltip="Decimal degrees, e.g. 176.0 (range -180 to 180)"
+                  >ⓘ</span
+                >
+              </th>
               <th>Actions</th>
             </tr>
           </thead>

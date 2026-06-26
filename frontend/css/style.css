@@ -25,6 +25,7 @@ body {
 }
 
 header {
+  position: relative;
   background: var(--green);
   color: #fff;
   padding: 1rem 1.5rem;
@@ -210,6 +211,141 @@ tr.editing td {
 }
 .cell-error:empty {
   display: none;
+}
+
+/* --- Empty / guidance state ------------------------------------------------ */
+#empty-msg {
+  margin: 0.75rem 0 0;
+  padding: 0.9rem 1rem;
+  background: #f6f9f6;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: #555;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* --- Header help button ---------------------------------------------------- */
+.help-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.help-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  opacity: 1;
+}
+
+/* --- Field hint tooltips (the ⓘ icons in table headers) -------------------- */
+.hint-icon {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.2rem;
+  color: var(--blue);
+  font-weight: normal;
+  cursor: help;
+  font-size: 0.85rem;
+}
+.hint-icon::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 135%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: #1f2a1f;
+  color: #fff;
+  padding: 0.35rem 0.55rem;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: normal;
+  line-height: 1.2;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  z-index: 5;
+  pointer-events: none;
+}
+.hint-icon:hover::after,
+.hint-icon:focus::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- Welcome / onboarding modal -------------------------------------------- */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+.welcome-modal {
+  position: relative;
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+.welcome-modal h2 {
+  text-align: left;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.welcome-intro {
+  margin: 0 0 0.9rem;
+  color: #444;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.welcome-list {
+  margin: 0 0 1.25rem;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #333;
+}
+.welcome-got-it {
+  display: block;
+  width: 100%;
+  padding: 0.55rem;
+  font-size: 0.95rem;
+}
+.welcome-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.75rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  background: transparent;
+  color: #888;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.welcome-close:hover {
+  color: #333;
+  opacity: 1;
 }
 
 .hidden {
