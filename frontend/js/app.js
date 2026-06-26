@@ -16,7 +16,6 @@ const TYPE_LABELS = {
 };
 
 // --- DOM refs ---------------------------------------------------------------
-const form = document.getElementById("group-form");
 const formError = document.getElementById("form-error");
 const tableBody = document.getElementById("groups-body");
 const emptyMsg = document.getElementById("empty-msg");
@@ -24,6 +23,20 @@ const emptyMsg = document.getElementById("empty-msg");
 // Last-loaded groups + which row (if any) is currently being edited inline.
 let groupsCache = [];
 let editingId = null;
+
+// Draft for the always-present "add" row, so typed input survives re-renders
+// triggered by editing other rows.
+function blankDraft() {
+  return {
+    name: "",
+    type: "environmental_group",
+    region: "",
+    contact_email: "",
+    latitude: "",
+    longitude: "",
+  };
+}
+let addDraft = blankDraft();
 
 // --- Map --------------------------------------------------------------------
 const map = L.map("map").setView([-37.9, 176.0], 8); // Waikato / Bay of Plenty
@@ -53,12 +66,25 @@ async function apiRequest(url, options = {}) {
 function renderTable(groups) {
   groupsCache = groups;
   tableBody.innerHTML = "";
+
+  // The add-row always sits directly below the header.
+  tableBody.appendChild(buildAddRow());
+
   emptyMsg.classList.toggle("hidden", groups.length > 0);
 
   for (const g of groups) {
     const tr = g.id === editingId ? buildEditRow(g) : buildDisplayRow(g);
     tableBody.appendChild(tr);
   }
+}
+
+function typeOptionsHtml(selected) {
+  return Object.keys(TYPE_LABELS)
+    .map(
+      (t) =>
+        `<option value="${t}"${t === selected ? " selected" : ""}>${TYPE_LABELS[t]}</option>`
+    )
+    .join("");
 }
 
 function buildDisplayRow(g) {
@@ -84,17 +110,9 @@ function buildDisplayRow(g) {
 function buildEditRow(g) {
   const tr = document.createElement("tr");
   tr.className = "editing";
-
-  const typeOptions = Object.keys(TYPE_LABELS)
-    .map(
-      (t) =>
-        `<option value="${t}"${t === g.type ? " selected" : ""}>${TYPE_LABELS[t]}</option>`
-    )
-    .join("");
-
   tr.innerHTML = `
     <td><input type="text" class="cell-input" data-field="name" value="${escapeHtml(g.name)}" /></td>
-    <td><select class="cell-input" data-field="type">${typeOptions}</select></td>
+    <td><select class="cell-input" data-field="type">${typeOptionsHtml(g.type)}</select></td>
     <td><input type="text" class="cell-input" data-field="region" value="${escapeHtml(g.region)}" /></td>
     <td><input type="email" class="cell-input" data-field="contact_email" value="${escapeHtml(g.contact_email)}" /></td>
     <td><input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" value="${g.latitude}" /></td>
@@ -107,6 +125,35 @@ function buildEditRow(g) {
     </td>`;
   tr.querySelector(".save").addEventListener("click", () => saveEdit(g.id, tr));
   tr.querySelector(".cancel").addEventListener("click", cancelEdit);
+  return tr;
+}
+
+function buildAddRow() {
+  const tr = document.createElement("tr");
+  tr.className = "add-row";
+  tr.innerHTML = `
+    <td><input type="text" class="cell-input" data-field="name" placeholder="Name" /></td>
+    <td><select class="cell-input" data-field="type">${typeOptionsHtml(addDraft.type)}</select></td>
+    <td><input type="text" class="cell-input" data-field="region" placeholder="Region" /></td>
+    <td><input type="email" class="cell-input" data-field="contact_email" placeholder="email@example.org" /></td>
+    <td><input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" placeholder="Lat" /></td>
+    <td><input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" placeholder="Long" /></td>
+    <td>
+      <div class="actions">
+        <button class="add-btn">Add</button>
+      </div>
+    </td>`;
+
+  // Pre-fill from the draft + keep it in sync so re-renders don't lose input.
+  tr.querySelectorAll(".cell-input").forEach((el) => {
+    const field = el.dataset.field;
+    if (addDraft[field] !== "") el.value = addDraft[field];
+    el.addEventListener("input", () => {
+      addDraft[field] = el.value;
+    });
+  });
+
+  tr.querySelector(".add-btn").addEventListener("click", () => addGroup(tr));
   return tr;
 }
 
@@ -130,6 +177,25 @@ function renderMap(groups) {
   }
 }
 
+// --- Helpers ----------------------------------------------------------------
+// Read the field inputs of a row into an API payload.
+function readRow(tr) {
+  const payload = {};
+  tr.querySelectorAll(".cell-input").forEach((el) => {
+    const field = el.dataset.field;
+    payload[field] =
+      field === "latitude" || field === "longitude"
+        ? parseFloat(el.value)
+        : el.value;
+  });
+  return payload;
+}
+
+function showError(e) {
+  const detail = Object.values(e.fieldErrors || {}).join(" ");
+  formError.textContent = (e.message + (detail ? " — " + detail : "")).trim();
+}
+
 // --- Actions ----------------------------------------------------------------
 async function loadGroups() {
   try {
@@ -141,32 +207,23 @@ async function loadGroups() {
   }
 }
 
-// Create-only: the Add form no longer edits existing rows.
-async function submitForm(event) {
-  event.preventDefault();
+// Inline create via the always-present add-row.
+async function addGroup(tr) {
   formError.textContent = "";
-
-  const payload = {
-    name: document.getElementById("name").value,
-    type: document.getElementById("type").value,
-    region: document.getElementById("region").value,
-    contact_email: document.getElementById("contact_email").value,
-    latitude: parseFloat(document.getElementById("latitude").value),
-    longitude: parseFloat(document.getElementById("longitude").value),
-  };
-
   try {
-    await apiRequest(API_BASE, { method: "POST", body: JSON.stringify(payload) });
-    form.reset();
+    await apiRequest(API_BASE, {
+      method: "POST",
+      body: JSON.stringify(readRow(tr)),
+    });
+    addDraft = blankDraft(); // reset the empty row back to blank
     await loadGroups();
   } catch (e) {
-    const detail = Object.values(e.fieldErrors || {}).join(" ");
-    formError.textContent = (e.message + (detail ? " — " + detail : "")).trim();
+    showError(e);
   }
 }
 
-// Inline editing: only one row editable at a time. Switching rows cancels
-// the previous edit by simply re-rendering with a new editingId.
+// Inline editing: only one existing row editable at a time. Switching rows
+// cancels the previous edit by simply re-rendering with a new editingId.
 function startEdit(id) {
   editingId = id;
   formError.textContent = "";
@@ -180,26 +237,15 @@ function cancelEdit() {
 
 async function saveEdit(id, tr) {
   formError.textContent = "";
-
-  const payload = {};
-  tr.querySelectorAll(".cell-input").forEach((el) => {
-    const field = el.dataset.field;
-    payload[field] =
-      field === "latitude" || field === "longitude"
-        ? parseFloat(el.value)
-        : el.value;
-  });
-
   try {
     await apiRequest(`${API_BASE}/${id}`, {
       method: "PUT",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(readRow(tr)),
     });
     editingId = null;
     await loadGroups();
   } catch (e) {
-    const detail = Object.values(e.fieldErrors || {}).join(" ");
-    formError.textContent = (e.message + (detail ? " — " + detail : "")).trim();
+    showError(e);
   }
 }
 
@@ -221,5 +267,4 @@ function escapeHtml(value) {
 }
 
 // --- Wire up ----------------------------------------------------------------
-form.addEventListener("submit", submitForm);
 loadGroups();
