@@ -169,6 +169,44 @@
       </section>
     </main>
 
+    <!-- AI support chat widget -->
+    <button
+      type="button"
+      id="chat-toggle"
+      class="chat-toggle"
+      aria-label="Open support chat"
+      title="Need help? Ask the assistant"
+    >
+      💬
+    </button>
+    <section
+      id="chat-panel"
+      class="chat-panel hidden"
+      aria-label="LandcareLink support chat"
+    >
+      <header class="chat-header">
+        <span>🌿 LandcareLink Assistant</span>
+        <button
+          type="button"
+          id="chat-close"
+          class="chat-close"
+          aria-label="Close chat"
+        >
+          ×
+        </button>
+      </header>
+      <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+      <form id="chat-form" class="chat-form">
+        <input
+          type="text"
+          id="chat-input"
+          autocomplete="off"
+          placeholder="Ask about groups or how to use this page…"
+        />
+        <button type="submit" id="chat-send">Send</button>
+      </form>
+    </section>
+
     <!-- Leaflet -->
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

@@ -18,8 +18,11 @@ $dotenv->load();
 
 
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/anthropic.php';
 require_once __DIR__ . '/../models/Group.php';
+require_once __DIR__ . '/../services/AnthropicClient.php';
 require_once __DIR__ . '/../controllers/GroupController.php';
+require_once __DIR__ . '/../controllers/SupportController.php';
 require_once __DIR__ . '/../routes/api.php';
 
 // --- CORS + content type ---------------------------------------------------
@@ -54,8 +57,10 @@ if ($raw !== '' && $raw !== false) {
 // --- Dispatch --------------------------------------------------------------
 try {
     $pdo        = get_db_connection();
-    $controller = new GroupController(new Group($pdo));
-    $response   = route($method, $path, $input, $controller);
+    $model      = new Group($pdo);
+    $controller = new GroupController($model);
+    $support    = new SupportController($model, new AnthropicClient(get_anthropic_api_key()));
+    $response   = route($method, $path, $input, $controller, $support);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode([

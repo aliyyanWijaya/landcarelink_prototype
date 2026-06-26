@@ -7,14 +7,27 @@
  * segment in the path, so it works regardless of the base path the server
  * is mounted under (e.g. /api/groups or /backend/public/api/groups).
  *
- * @param string               $method HTTP verb
- * @param string               $path   request path
- * @param array<string, mixed> $input  decoded JSON body
+ * @param string               $method  HTTP verb
+ * @param string               $path    request path
+ * @param array<string, mixed> $input   decoded JSON body
  * @return array{status:int, body:array}
  */
-function route(string $method, string $path, array $input, GroupController $controller): array
-{
+function route(
+    string $method,
+    string $path,
+    array $input,
+    GroupController $controller,
+    SupportController $support
+): array {
     $segments = array_values(array_filter(explode('/', trim($path, '/')), 'strlen'));
+
+    // AI support widget: POST /api/support
+    if (in_array('support', $segments, true)) {
+        if ($method !== 'POST') {
+            return ['status' => 405, 'body' => ['error' => 'Method not allowed']];
+        }
+        return $support->handle($input);
+    }
 
     $idx = array_search('groups', $segments, true);
     if ($idx === false) {

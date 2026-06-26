@@ -2,6 +2,7 @@
 
 // Point this at your running PHP API.
 const API_BASE = "http://localhost:8000/api/groups";
+const SUPPORT_API = "http://localhost:8000/api/support";
 
 const NAME_MAX = 255;
 
@@ -496,6 +497,109 @@ clearFiltersBtn.addEventListener("click", () => {
   typeFilter.value = "";
   regionFilter.value = "";
   applyView();
+});
+
+// --- AI support chat widget -------------------------------------------------
+const chatToggle = document.getElementById("chat-toggle");
+const chatPanel = document.getElementById("chat-panel");
+const chatClose = document.getElementById("chat-close");
+const chatMessages = document.getElementById("chat-messages");
+const chatForm = document.getElementById("chat-form");
+const chatInput = document.getElementById("chat-input");
+const chatSend = document.getElementById("chat-send");
+
+// In-memory conversation history for this session only (never persisted).
+const chatHistory = [];
+let chatGreeted = false;
+let chatBusy = false;
+
+function appendChatMessage(role, text) {
+  const msg = document.createElement("div");
+  msg.className = `chat-msg chat-msg-${role}`;
+  msg.textContent = text; // textContent — never inject HTML from replies
+  chatMessages.appendChild(msg);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return msg;
+}
+
+// Animated "assistant is typing" bubble; returns it so we can remove it later.
+function showTypingIndicator() {
+  const el = document.createElement("div");
+  el.className = "chat-msg chat-msg-assistant chat-typing";
+  el.innerHTML = "<span></span><span></span><span></span>";
+  chatMessages.appendChild(el);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return el;
+}
+
+function openChat() {
+  chatPanel.classList.remove("hidden");
+  if (!chatGreeted) {
+    appendChatMessage(
+      "assistant",
+      "Hi! I can help you use LandcareLink or answer questions about the listed groups. What would you like to know?"
+    );
+    chatGreeted = true;
+  }
+  chatInput.focus();
+}
+
+function closeChat() {
+  chatPanel.classList.add("hidden");
+}
+
+async function sendSupportMessage(message) {
+  chatHistory.push({ role: "user", content: message });
+  appendChatMessage("user", message);
+
+  chatBusy = true;
+  chatSend.disabled = true;
+  const typing = showTypingIndicator();
+
+  try {
+    const res = await fetch(SUPPORT_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    const body = await res.json();
+    typing.remove();
+
+    if (!res.ok) {
+      const errText =
+        body.error || "Sorry, something went wrong. Please try again.";
+      appendChatMessage("error", errText);
+      return;
+    }
+
+    const reply = body.reply || "(no response)";
+    chatHistory.push({ role: "assistant", content: reply });
+    appendChatMessage("assistant", reply);
+  } catch (e) {
+    typing.remove();
+    appendChatMessage(
+      "error",
+      "Could not reach the assistant. Check your connection and try again."
+    );
+  } finally {
+    chatBusy = false;
+    chatSend.disabled = false;
+    chatInput.focus();
+  }
+}
+
+chatToggle.addEventListener("click", () => {
+  if (chatPanel.classList.contains("hidden")) openChat();
+  else closeChat();
+});
+chatClose.addEventListener("click", closeChat);
+
+chatForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const message = chatInput.value.trim();
+  if (!message || chatBusy) return;
+  chatInput.value = "";
+  sendSupportMessage(message);
 });
 
 loadGroups();
