@@ -8,13 +8,19 @@
  * All requests are JSON. Errors are returned as structured JSON.
  */
 
+
 declare(strict_types=1);
+
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../..');
+$dotenv->load();
+
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../models/Group.php';
 require_once __DIR__ . '/../controllers/GroupController.php';
 require_once __DIR__ . '/../routes/api.php';
-require_once __DIR__ . '/vendor/autoload.php';
 
 // --- CORS + content type ---------------------------------------------------
 header('Content-Type: application/json; charset=utf-8');
@@ -61,8 +67,7 @@ try {
     exit;
 }
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+
 
 http_response_code($response['status']);
 echo json_encode($response['body']);
