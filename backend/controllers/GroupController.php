@@ -81,8 +81,10 @@ class GroupController
     {
         $errors = [];
 
-        if (empty($input['name']) || !is_string($input['name'])) {
+        if (empty($input['name']) || !is_string($input['name']) || trim($input['name']) === '') {
             $errors['name'] = 'Name is required.';
+        } elseif (mb_strlen(trim($input['name'])) > 255) {
+            $errors['name'] = 'Name must be 255 characters or fewer.';
         }
 
         if (empty($input['type']) || !in_array($input['type'], Group::TYPES, true)) {

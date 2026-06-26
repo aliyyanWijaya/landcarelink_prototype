@@ -110,6 +110,15 @@ final class GroupApiTest extends TestCase
         $this->assertArrayHasKey('latitude', $res['body']['errors']);
     }
 
+    public function testStoreRejectsOverlongName(): void
+    {
+        $res = $this->controller->store($this->validPayload([
+            'name' => str_repeat('a', 256),
+        ]));
+        $this->assertSame(422, $res['status']);
+        $this->assertArrayHasKey('name', $res['body']['errors']);
+    }
+
     /** PUT /api/groups/{id} */
     public function testUpdateModifiesGroup(): void
     {

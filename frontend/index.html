@@ -25,9 +25,42 @@
       <section class="panel map-panel">
         <div id="map"></div>
         <div class="legend">
-          <span><i class="dot" style="background: #2e7d32"></i> Environmental group</span>
-          <span><i class="dot" style="background: #1565c0"></i> Catchment collective</span>
-          <span><i class="dot" style="background: #ef6c00"></i> Catchment group</span>
+          <span
+            ><i class="dot" style="background: #2e7d32"></i> Environmental
+            group</span
+          >
+          <span
+            ><i class="dot" style="background: #1565c0"></i> Catchment
+            collective</span
+          >
+          <span
+            ><i class="dot" style="background: #ef6c00"></i> Catchment
+            group</span
+          >
+        </div>
+      </section>
+
+      <section class="panel filter-panel">
+        <!-- Filter & search bar (client-side, against loaded data) -->
+        <div class="filter-bar">
+          <input
+            type="search"
+            id="search-input"
+            placeholder="Search name, region, or email…"
+          />
+          <select id="type-filter">
+            <option value="">All types</option>
+            <option value="environmental_group">Environmental group</option>
+            <option value="catchment_collective">Catchment collective</option>
+            <option value="catchment_group">Catchment group</option>
+          </select>
+          <select id="region-filter">
+            <option value="">All regions</option>
+          </select>
+          <button type="button" id="clear-filters" class="secondary">
+            Clear filters
+          </button>
+          <span id="filter-count" class="filter-count"></span>
         </div>
       </section>
 
@@ -35,6 +68,7 @@
            and listing/editing. -->
       <section class="panel table-panel">
         <h2>All groups</h2>
+
         <table id="groups-table">
           <thead>
             <tr>
@@ -50,7 +84,9 @@
           <tbody id="groups-body"></tbody>
         </table>
         <p id="form-error" class="form-error"></p>
-        <p id="empty-msg" class="hidden">No groups yet — add one in the row above.</p>
+        <p id="empty-msg" class="hidden">
+          No groups yet — add one in the row above.
+        </p>
       </section>
     </main>
 
