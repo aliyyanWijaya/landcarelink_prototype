@@ -10,14 +10,16 @@ RUN sed -ri \
     /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
-# Menyalin semua file proyek
 COPY . .
 
-# Pastikan rewrite aktif
 RUN a2enmod rewrite
 
-# SOLUSI: Paksa matikan MPM lain yang bentrok dan pastikan prefork yang aktif
-RUN a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork
+# --- SEKSI PERBAIKAN RADIKAL ---
+# Hapus paksa file load mpm_event dan mpm_worker dari mods-enabled agar TIDAK BISA di-load sama sekali
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.load \
+    && rm -f /etc/apache2/mods-enabled/mpm_worker.load \
+    && ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load
+# ---------------------------------
 
 RUN printf '<Directory "%s">\n\
     AllowOverride All\n\
