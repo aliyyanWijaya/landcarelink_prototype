@@ -2,22 +2,24 @@ FROM php:8.2-apache
 
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-ENV APACHE_DOCUMENT_ROOT /var/www/html/backend/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/backend/public
+
+RUN sed -ri \
+    -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
+    /etc/apache2/sites-available/*.conf \
+    /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
 COPY . .
 
-# Pastikan cuma satu MPM yang aktif
-RUN a2dismod mpm_event mpm_worker 2>/dev/null; a2enmod mpm_prefork rewrite
+# Hanya aktifkan rewrite
+RUN a2enmod rewrite
 
-RUN { \
-    echo '<Directory ${APACHE_DOCUMENT_ROOT}>'; \
-    echo '    AllowOverride All'; \
-    echo '    Require all granted'; \
-    echo '</Directory>'; \
-} > /etc/apache2/conf-available/docroot-override.conf \
-    && a2enconf docroot-override
+RUN printf '<Directory "%s">\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>\n' "$APACHE_DOCUMENT_ROOT" \
+> /etc/apache2/conf-available/docroot-override.conf \
+&& a2enconf docroot-override
 
 EXPOSE 80
