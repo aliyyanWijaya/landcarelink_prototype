@@ -1,8 +1,17 @@
 FROM php:8.2-apache
 
+# Install system dependencies untuk composer
+RUN apt-get update && apt-get install -y \
+    unzip \
+    curl
+
+# Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql mysqli
 
-# ✅ FIX: pastikan hanya 1 MPM aktif
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# FIX MPM conflict
 RUN a2dismod mpm_event mpm_worker || true
 RUN a2enmod mpm_prefork
 
@@ -14,6 +23,14 @@ RUN sed -ri \
     /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
+
+# Copy composer dulu (biar cache optimal)
+COPY composer.json composer.lock ./
+
+# Install dependency
+RUN composer install --no-dev --optimize-autoloader
+
+# Baru copy semua file
 COPY . .
 
 RUN a2enmod rewrite
