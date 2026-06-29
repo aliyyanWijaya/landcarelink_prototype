@@ -26,4 +26,3 @@ RUN printf '<Directory "%s">\n\
 && a2enconf docroot-override
 
 EXPOSE 80
-``
