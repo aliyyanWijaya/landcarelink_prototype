@@ -10,10 +10,14 @@ RUN sed -ri \
     /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
+# Menyalin semua file proyek
 COPY . .
 
-# HANYA ini yang perlu
+# Pastikan rewrite aktif
 RUN a2enmod rewrite
+
+# SOLUSI: Paksa matikan MPM lain yang bentrok dan pastikan prefork yang aktif
+RUN a2dismod mpm_event mpm_worker || true && a2enmod mpm_prefork
 
 RUN printf '<Directory "%s">\n\
     AllowOverride All\n\
