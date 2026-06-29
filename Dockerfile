@@ -9,9 +9,9 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 WORKDIR /var/www/html
 COPY . .
 
-RUN a2enmod rewrite
+# Pastikan cuma satu MPM yang aktif
+RUN a2dismod mpm_event mpm_worker 2>/dev/null; a2enmod mpm_prefork rewrite
 
-# Izinkan .htaccess override di document root
 RUN { \
     echo '<Directory ${APACHE_DOCUMENT_ROOT}>'; \
     echo '    AllowOverride All'; \
