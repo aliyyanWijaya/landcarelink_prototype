@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: landcarelink
+    env: docker
+    dockerfilePath: ./Dockerfile
+    disk:
+      name: sqlite-data
+      mountPath: /var/www/html/database
+      sizeGB: 1
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false   # set this manually in the Render dashboard — never commit the value

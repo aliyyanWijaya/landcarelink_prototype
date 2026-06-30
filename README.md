@@ -50,6 +50,9 @@ landcarelink-prototype/
 ├── tests/
 │   └── GroupApiTest.php            # PHPUnit, one+ test per CRUD endpoint
 ├── schema.sql                      # SQLite schema + 10 seed rows
+├── Dockerfile                      # Apache + pdo_sqlite, combined frontend+backend
+├── render.yaml                     # Render Blueprint (Docker, persistent disk)
+├── entrypoint.sh                   # seeds DB on first start, then runs Apache
 ├── composer.json
 ├── phpunit.xml
 └── README.md
@@ -121,22 +124,41 @@ Open <http://localhost:8080>. If your API runs somewhere other than
 The map is color-coded by type:
 🟢 environmental group · 🔵 catchment collective · 🟠 catchment group.
 
-## Deploying to Railway
+## Deploying to Render
 
-The backend is configured for Railway's **Nixpacks** auto-detection — no
-Dockerfile needed.
+The project ships with a `Dockerfile` and a `render.yaml` Blueprint for
+one-click deploys on [Render](https://render.com).
 
-- Set the service **Root Directory** to `backend/`
-- Nixpacks detects PHP + Composer and runs `composer install --no-dev --optimize-autoloader`
-- The `backend/Procfile` tells Railway how to start the server:
-  ```
-  web: php -S 0.0.0.0:$PORT -t public
-  ```
-- Set the `ANTHROPIC_API_KEY` environment variable in the Railway service dashboard
+### Quick start
 
-The SQLite database file lives at `database/database.sqlite` relative to the
-project root. Seed it once with `sqlite3 database/database.sqlite < schema.sql`
-before first deploy, or commit the pre-seeded file to the repo.
+1. Push this repo to GitHub or GitLab.
+2. In the Render Dashboard → **New** → **Blueprint** → connect your repo.
+3. Render reads `render.yaml` and creates the service automatically.
+4. Open the service's **Environment** tab and set `ANTHROPIC_API_KEY` to your
+   Anthropic API key (it is intentionally absent from `render.yaml` to avoid
+   committing secrets).
+
+### What gets deployed
+
+- **Docker image** built from the project-root `Dockerfile` using
+  `php:8.2-apache` with the `pdo_sqlite` extension.
+- **Apache** serves both the static frontend (`/`) and the JSON API (`/api/*`)
+  from the same origin, so no CORS configuration is needed in production.
+  Routing is controlled by `backend/public/.htaccess` — static files are served
+  directly; everything else is rewritten to `index.php`.
+- **Persistent disk** mounted at `/var/www/html/database` (1 GB) so the SQLite
+  file survives redeploys and container restarts.
+- **Auto-seed**: `entrypoint.sh` checks whether `database.sqlite` exists before
+  starting Apache. If the disk is empty (first deploy), it runs `schema.sql`
+  to create the table and insert the 10 sample groups.
+
+### ⚠ Update `API_BASE` before deploying
+
+The frontend (`frontend/js/app.js`) has `API_BASE` pointing to
+`http://localhost:8000` for local development. In the combined Render deploy the
+frontend and API share the same origin, so you must update that value to either
+a relative path (`/api`) or your full Render URL
+(e.g. `https://landcarelink.onrender.com`) before building the image.
 
 ## Running the tests
 
@@ -147,9 +169,9 @@ composer install
 composer test        # or: ./vendor/bin/phpunit
 ```
 
-The suite spins up an **in-memory SQLite** database, so it requires no running
-MySQL instance. It includes at least one test per CRUD endpoint plus validation
-and not-found cases.
+The suite spins up an **in-memory SQLite** database, so it requires no external
+database. It covers at least one test per CRUD endpoint plus validation and
+not-found cases.
 
 ## Notes & next steps
 
