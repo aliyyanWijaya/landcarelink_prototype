@@ -1,8 +1,10 @@
 /* LandcareLink frontend — vanilla JS + Fetch + Leaflet */
 
 // Point this at your running PHP API.
-const API_BASE = "http://localhost:8000/api/groups";
-const SUPPORT_API = "http://localhost:8000/api/support";
+const API_BASE =
+  "https://landcarelink-prototype-2-backend.onrender.com/api/groups";
+const SUPPORT_API =
+  "https://landcarelink-prototype-2-backend.onrender.com/api/support";
 
 const NAME_MAX = 255;
 
@@ -104,7 +106,7 @@ function applyView() {
 function populateRegionFilter() {
   const previous = regionFilter.value;
   const regions = [...new Set(groupsCache.map((g) => g.region))].sort((a, b) =>
-    a.localeCompare(b)
+    a.localeCompare(b),
   );
   regionFilter.innerHTML =
     `<option value="">All regions</option>` +
@@ -141,7 +143,7 @@ function typeOptionsHtml(selected) {
   return Object.keys(TYPE_LABELS)
     .map(
       (t) =>
-        `<option value="${t}"${t === selected ? " selected" : ""}>${TYPE_LABELS[t]}</option>`
+        `<option value="${t}"${t === selected ? " selected" : ""}>${TYPE_LABELS[t]}</option>`,
     )
     .join("");
 }
@@ -167,7 +169,9 @@ function buildDisplayRow(g) {
       </div>
     </td>`;
   tr.querySelector(".edit").addEventListener("click", () => startEdit(g.id));
-  tr.querySelector(".danger").addEventListener("click", () => removeGroup(g.id));
+  tr.querySelector(".danger").addEventListener("click", () =>
+    removeGroup(g.id),
+  );
   return tr;
 }
 
@@ -175,12 +179,30 @@ function buildEditRow(g) {
   const tr = document.createElement("tr");
   tr.className = "editing";
   tr.innerHTML =
-    fieldCell(`<input type="text" class="cell-input" data-field="name" maxlength="255" value="${escapeHtml(g.name)}" />`, "name") +
-    fieldCell(`<select class="cell-input" data-field="type">${typeOptionsHtml(g.type)}</select>`, "type") +
-    fieldCell(`<input type="text" class="cell-input" data-field="region" value="${escapeHtml(g.region)}" />`, "region") +
-    fieldCell(`<input type="email" class="cell-input" data-field="contact_email" value="${escapeHtml(g.contact_email)}" />`, "contact_email") +
-    fieldCell(`<input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" title="Decimal degrees, e.g. -37.9 (range -90 to 90)" value="${g.latitude}" />`, "latitude") +
-    fieldCell(`<input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" title="Decimal degrees, e.g. 176.0 (range -180 to 180)" value="${g.longitude}" />`, "longitude") +
+    fieldCell(
+      `<input type="text" class="cell-input" data-field="name" maxlength="255" value="${escapeHtml(g.name)}" />`,
+      "name",
+    ) +
+    fieldCell(
+      `<select class="cell-input" data-field="type">${typeOptionsHtml(g.type)}</select>`,
+      "type",
+    ) +
+    fieldCell(
+      `<input type="text" class="cell-input" data-field="region" value="${escapeHtml(g.region)}" />`,
+      "region",
+    ) +
+    fieldCell(
+      `<input type="email" class="cell-input" data-field="contact_email" value="${escapeHtml(g.contact_email)}" />`,
+      "contact_email",
+    ) +
+    fieldCell(
+      `<input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" title="Decimal degrees, e.g. -37.9 (range -90 to 90)" value="${g.latitude}" />`,
+      "latitude",
+    ) +
+    fieldCell(
+      `<input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" title="Decimal degrees, e.g. 176.0 (range -180 to 180)" value="${g.longitude}" />`,
+      "longitude",
+    ) +
     `<td>
       <div class="actions">
         <button class="save">Save</button>
@@ -196,12 +218,30 @@ function buildAddRow() {
   const tr = document.createElement("tr");
   tr.className = "add-row";
   tr.innerHTML =
-    fieldCell(`<input type="text" class="cell-input" data-field="name" maxlength="255" placeholder="Name" />`, "name") +
-    fieldCell(`<select class="cell-input" data-field="type">${typeOptionsHtml(addDraft.type)}</select>`, "type") +
-    fieldCell(`<input type="text" class="cell-input" data-field="region" placeholder="Region" />`, "region") +
-    fieldCell(`<input type="email" class="cell-input" data-field="contact_email" placeholder="email@example.org" />`, "contact_email") +
-    fieldCell(`<input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" placeholder="e.g. -37.9" title="Decimal degrees, e.g. -37.9 (range -90 to 90)" />`, "latitude") +
-    fieldCell(`<input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" placeholder="e.g. 176.0" title="Decimal degrees, e.g. 176.0 (range -180 to 180)" />`, "longitude") +
+    fieldCell(
+      `<input type="text" class="cell-input" data-field="name" maxlength="255" placeholder="Name" />`,
+      "name",
+    ) +
+    fieldCell(
+      `<select class="cell-input" data-field="type">${typeOptionsHtml(addDraft.type)}</select>`,
+      "type",
+    ) +
+    fieldCell(
+      `<input type="text" class="cell-input" data-field="region" placeholder="Region" />`,
+      "region",
+    ) +
+    fieldCell(
+      `<input type="email" class="cell-input" data-field="contact_email" placeholder="email@example.org" />`,
+      "contact_email",
+    ) +
+    fieldCell(
+      `<input type="number" step="any" min="-90" max="90" class="cell-input" data-field="latitude" placeholder="e.g. -37.9" title="Decimal degrees, e.g. -37.9 (range -90 to 90)" />`,
+      "latitude",
+    ) +
+    fieldCell(
+      `<input type="number" step="any" min="-180" max="180" class="cell-input" data-field="longitude" placeholder="e.g. 176.0" title="Decimal degrees, e.g. 176.0 (range -180 to 180)" />`,
+      "longitude",
+    ) +
     `<td>
       <div class="actions">
         <button class="add-btn">Add</button>
@@ -235,7 +275,7 @@ function renderMap(groups) {
       `<strong>${escapeHtml(g.name)}</strong><br>` +
         `${TYPE_LABELS[g.type] || g.type}<br>` +
         `${escapeHtml(g.region)}<br>` +
-        `<a href="mailto:${escapeHtml(g.contact_email)}">${escapeHtml(g.contact_email)}</a>`
+        `<a href="mailto:${escapeHtml(g.contact_email)}">${escapeHtml(g.contact_email)}</a>`,
     );
     marker.addTo(markerLayer);
   }
@@ -252,7 +292,8 @@ function validateGroup(p) {
 
   const name = String(p.name ?? "").trim();
   if (!name) errors.name = "Name is required.";
-  else if (name.length > NAME_MAX) errors.name = `Name must be ${NAME_MAX} characters or fewer.`;
+  else if (name.length > NAME_MAX)
+    errors.name = `Name must be ${NAME_MAX} characters or fewer.`;
 
   if (!TYPE_LABELS[p.type]) errors.type = "Select a valid type.";
 
@@ -260,7 +301,8 @@ function validateGroup(p) {
 
   const email = String(p.contact_email ?? "").trim();
   if (!email) errors.contact_email = "Contact email is required.";
-  else if (!isValidEmail(email)) errors.contact_email = "Enter a valid email address.";
+  else if (!isValidEmail(email))
+    errors.contact_email = "Enter a valid email address.";
 
   if (p.latitude === "" || p.latitude === null || Number.isNaN(p.latitude)) {
     errors.latitude = "Latitude is required.";
@@ -279,13 +321,17 @@ function validateGroup(p) {
 
 // name + region duplicate detection against loaded data.
 function isDuplicate(p, excludeId = null) {
-  const name = String(p.name ?? "").trim().toLowerCase();
-  const region = String(p.region ?? "").trim().toLowerCase();
+  const name = String(p.name ?? "")
+    .trim()
+    .toLowerCase();
+  const region = String(p.region ?? "")
+    .trim()
+    .toLowerCase();
   return groupsCache.some(
     (g) =>
       g.id !== excludeId &&
       g.name.trim().toLowerCase() === name &&
-      g.region.trim().toLowerCase() === region
+      g.region.trim().toLowerCase() === region,
   );
 }
 
@@ -355,14 +401,17 @@ async function addGroup(tr) {
   if (
     isDuplicate(payload) &&
     !confirm(
-      `A group named "${payload.name.trim()}" already exists in ${payload.region.trim()}. Add it anyway?`
+      `A group named "${payload.name.trim()}" already exists in ${payload.region.trim()}. Add it anyway?`,
     )
   ) {
     return;
   }
 
   try {
-    await apiRequest(API_BASE, { method: "POST", body: JSON.stringify(payload) });
+    await apiRequest(API_BASE, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
     addDraft = blankDraft(); // reset the empty row back to blank
     await loadGroups();
   } catch (e) {
@@ -396,7 +445,7 @@ async function saveEdit(id, tr) {
   if (
     isDuplicate(payload, id) &&
     !confirm(
-      `Another group named "${payload.name.trim()}" already exists in ${payload.region.trim()}. Save anyway?`
+      `Another group named "${payload.name.trim()}" already exists in ${payload.region.trim()}. Save anyway?`,
     )
   ) {
     return;
@@ -426,9 +475,17 @@ async function removeGroup(id) {
 }
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[c]));
+  return String(value).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c],
+  );
 }
 
 // --- Onboarding / help guidance --------------------------------------------
@@ -537,7 +594,7 @@ function openChat() {
   if (!chatGreeted) {
     appendChatMessage(
       "assistant",
-      "Hi! I can help you use LandcareLink or answer questions about the listed groups. What would you like to know?"
+      "Hi! I can help you use LandcareLink or answer questions about the listed groups. What would you like to know?",
     );
     chatGreeted = true;
   }
@@ -579,7 +636,7 @@ async function sendSupportMessage(message) {
     typing.remove();
     appendChatMessage(
       "error",
-      "Could not reach the assistant. Check your connection and try again."
+      "Could not reach the assistant. Check your connection and try again.",
     );
   } finally {
     chatBusy = false;
