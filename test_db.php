@@ -1,16 +1,19 @@
 <?php
-
-$host = "MYSQLHOST_KAMU";
-$user = "MYSQLUSER_KAMU";
-$pass = "MYSQLPASSWORD_KAMU";
-$name = "MYSQLDATABASE_KAMU";
-$port = "MYSQLPORT_KAMU";
+require_once __DIR__ . '/vendor/autoload.php';
 
 try {
-    $dsn = "mysql:host=$host;port=$port;dbname=$name;charset=utf8mb4";
-    $pdo = new PDO($dsn, $user, $pass);
+    $dsn = 'sqlite:' . __DIR__ . '/database/database.sqlite';
+    $options = [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ];
 
-    echo "✅ Connected to Railway DB successfully!";
+    $pdo = new PDO($dsn, null, null, $options);
+
+    $count = $pdo->query('SELECT COUNT(*) FROM groups')->fetchColumn();
+    echo "Connected to SQLite successfully! Groups in database: {$count}\n";
+
 } catch (PDOException $e) {
-    echo "❌ Connection failed: " . $e->getMessage();
+    echo "Connection Failed: " . $e->getMessage() . "\n";
 }

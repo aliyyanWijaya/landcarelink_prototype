@@ -1,23 +1,18 @@
--- LandcareLink Prototype — MySQL schema + seed data
--- Run with: mysql -u root -p < schema.sql
-
-CREATE DATABASE IF NOT EXISTS landcarelink
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-USE landcarelink;
+-- LandcareLink Prototype — SQLite schema + seed data
+-- Apply with: sqlite3 database/database.sqlite < schema.sql
 
 DROP TABLE IF EXISTS `groups`;
 
 CREATE TABLE `groups` (
-  `id`            INT AUTO_INCREMENT PRIMARY KEY,
-  `name`          VARCHAR(255) NOT NULL,
-  `type`          ENUM('environmental_group','catchment_collective','catchment_group') NOT NULL,
-  `region`        VARCHAR(255) NOT NULL,
-  `contact_email` VARCHAR(255) NOT NULL,
-  `latitude`      DECIMAL(10,7) NOT NULL,
-  `longitude`     DECIMAL(10,7) NOT NULL,
-  `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `id`            INTEGER PRIMARY KEY AUTOINCREMENT,
+  `name`          TEXT NOT NULL,
+  `type`          TEXT NOT NULL,
+  `region`        TEXT NOT NULL,
+  `contact_email` TEXT NOT NULL,
+  `latitude`      REAL NOT NULL,
+  `longitude`     REAL NOT NULL,
+  `created_at`    TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Sample seed data (10 rows, mix of Waikato and Bay of Plenty regions)
 INSERT INTO `groups` (`name`, `type`, `region`, `contact_email`, `latitude`, `longitude`) VALUES
