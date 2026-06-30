@@ -3,7 +3,7 @@ FROM php:8.2-apache
 # sqlite3 CLI is needed by entrypoint.sh to seed the database on first start.
 # unzip is needed by Composer to extract packages.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends unzip sqlite3 \
+ && apt-get install -y --no-install-recommends unzip sqlite3 libsqlite3-dev \
  && rm -rf /var/lib/apt/lists/*
 
 # Enable PDO and the SQLite driver.
