@@ -2,13 +2,13 @@
 
 A full-stack prototype for an environmental community platform that manages
 **community groups** data — inspired by LandcareLink. It covers the full slice:
-a native-PHP REST API backed by MySQL (PDO + prepared statements), a vanilla
+a native-PHP REST API backed by SQLite (PDO + prepared statements), a vanilla
 HTML/CSS/JS frontend with a Leaflet map, and a PHPUnit test suite.
 
 ## Features
 
 - REST API with full CRUD (`GET`, `POST`, `PUT`, `DELETE`) for the `Group` entity
-- MySQL via PDO using **prepared statements only**
+- SQLite via PDO using **prepared statements only**
 - Input validation with structured JSON error responses
 - Modular backend: `config/`, `models/`, `controllers/`, `routes/`, `public/`
 - Frontend table to view / add / edit / delete groups via the Fetch API
@@ -49,7 +49,7 @@ landcarelink-prototype/
 │   └── js/app.js                   # Fetch + Leaflet
 ├── tests/
 │   └── GroupApiTest.php            # PHPUnit, one+ test per CRUD endpoint
-├── schema.sql                      # MySQL schema + 10 seed rows
+├── schema.sql                      # SQLite schema + 10 seed rows
 ├── composer.json
 ├── phpunit.xml
 └── README.md
@@ -57,8 +57,7 @@ landcarelink-prototype/
 
 ## Prerequisites
 
-- PHP **8.1+** with the `pdo_mysql` and `pdo_sqlite` extensions
-- MySQL **5.7+** / MariaDB
+- PHP **8.1+** with the `pdo_sqlite` extension
 - Composer (for installing PHPUnit)
 
 ## Setup
@@ -66,26 +65,11 @@ landcarelink-prototype/
 ### 1. Create and seed the database
 
 ```bash
-mysql -u root -p < schema.sql
+sqlite3 database/database.sqlite < schema.sql
 ```
 
-This creates the `landcarelink` database, the `groups` table, and inserts 10
-sample groups (a mix of **Waikato** and **Bay of Plenty** regions).
-
-### 2. Configure the connection (optional)
-
-The API reads connection details from environment variables, with sensible
-defaults. Override them if needed:
-
-```bash
-export DB_HOST=127.0.0.1
-export DB_PORT=3306
-export DB_NAME=landcarelink
-export DB_USER=root
-export DB_PASS=secret
-```
-
-Defaults: host `127.0.0.1`, port `3306`, db `landcarelink`, user `root`, empty password.
+This creates the `groups` table inside `database/database.sqlite` and inserts
+10 sample groups (a mix of **Waikato** and **Bay of Plenty** regions).
 
 ## Running locally
 
@@ -136,6 +120,23 @@ Open <http://localhost:8080>. If your API runs somewhere other than
 
 The map is color-coded by type:
 🟢 environmental group · 🔵 catchment collective · 🟠 catchment group.
+
+## Deploying to Railway
+
+The backend is configured for Railway's **Nixpacks** auto-detection — no
+Dockerfile needed.
+
+- Set the service **Root Directory** to `backend/`
+- Nixpacks detects PHP + Composer and runs `composer install --no-dev --optimize-autoloader`
+- The `backend/Procfile` tells Railway how to start the server:
+  ```
+  web: php -S 0.0.0.0:$PORT -t public
+  ```
+- Set the `ANTHROPIC_API_KEY` environment variable in the Railway service dashboard
+
+The SQLite database file lives at `database/database.sqlite` relative to the
+project root. Seed it once with `sqlite3 database/database.sqlite < schema.sql`
+before first deploy, or commit the pre-seeded file to the repo.
 
 ## Running the tests
 
